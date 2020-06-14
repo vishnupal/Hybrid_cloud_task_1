@@ -5,7 +5,6 @@
     </head>
     <body>
 <?php
-echo ' <img src="vimal.jpg" /> ';
 
       
 $myfile = fopen("cloudfrount.txt", "r") or die("Unable to open file!");

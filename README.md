@@ -10,4 +10,12 @@
 ### 6. Copy the github repo code into /var/www/html
 ### 7. Create S3 bucket, and copy/deploy the images from github repo into the s3 bucket and change the permission to public readable.
 ### 8 Create a Cloudfront using s3 bucket(which contains images) and use the Cloudfront URL to  update in code in /var/www/html
-
+## REQUIREMENT 
+### 1. AWS account
+### 2. Terraform pre installed
+### 3. github
+### 4. aws2 cli
+## EXPLANATION
+### Before going to task first of all we create a AMI user using AWS and download athe access key and secret key and do profile configure using aws2 cli
+### add provider profile into terraform file
+### task 1-> in this task i create new key_pair using 

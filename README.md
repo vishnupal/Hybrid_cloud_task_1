@@ -34,3 +34,106 @@ module "key_pair" {
 
 }
 ```
+```
+resource "aws_security_group" "Security_of_ec2" {
+  name        = "Service"
+  description = "Security_group"
+
+
+  ingress {
+
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  egress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Security"
+  }
+}
+``
+
+
+```
+resource "aws_instance" "Hybrid_instance" {
+  ami             = "ami-0447a12f28fddb066"
+  instance_type   = "t2.micro"
+  key_name        = "terraform_ec2"
+  security_groups = ["${aws_security_group.Security_of_ec2.name}"]
+  user_data       = <<-EOF
+                #! /bin/bash
+                sudo su - root
+                sudo yum install httpd -y
+                sudo yum install php -y
+                sudo systemctl start httpd
+                sudo systemctl enable httpd
+                sudo yum install git -y
+
+                sudo setenforce 0
+                EOF
+  tags = {
+    Name = "Instance_of_vishnupal"
+  }
+}
+
+resource "null_resource" "nulllocal1" {
+  provisioner "local-exec" {
+    command = "echo  ${aws_instance.Hybrid_instance.public_ip} > publicip.txt"
+  }
+}
+```
+```
+resource "aws_s3_bucket" "s3_bucket" {
+  bucket        = "s3-website-vishnupal.com"
+  acl           = "public-read"
+  force_destroy = true
+
+provisioner "local-exec" {
+    command = "rm -rvf ./images"
+}
+//provisioner "local-exec" {
+//    command = "git clone https://github.com/vishnupal/images.git"
+//}
+//provisioner "local-exec" {
+//    command = "aws2 s3 cp ./images s3://s3-website-vishnupal.com --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers --recursive"
+//}
+
+   
+  tags = {
+    Name = "s3_bucket"
+  }
+}
+resource "aws_s3_bucket_public_access_block" "s3_type" {
+  bucket              = "${aws_s3_bucket.s3_bucket.id}"
+  block_public_acls   = false
+  block_public_policy = false
+}
+
+
+output "s3_id" {
+  value = aws_s3_bucket.s3_bucket.id
+}
+
+```

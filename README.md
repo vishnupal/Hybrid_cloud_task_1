@@ -73,7 +73,7 @@ resource "aws_security_group" "Security_of_ec2" {
     Name = "Security"
   }
 }
-``
+```
 
 
 ```
@@ -137,3 +137,160 @@ output "s3_id" {
 }
 
 ```
+```
+data "aws_s3_bucket" "blog_repo" {
+  depends_on = [
+    aws_s3_bucket_public_access_block.s3_type,
+  ]
+  bucket = "s3-website-vishnupal.com"
+}
+
+resource "aws_cloudfront_distribution" "s3_distribution" {
+  origin {
+
+    origin_id   = "default"
+    domain_name = "${data.aws_s3_bucket.blog_repo.bucket_domain_name}"
+
+    s3_origin_config {
+      origin_access_identity = "${aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path}"
+    }
+  }
+
+  enabled         = true
+  is_ipv6_enabled = true
+  comment         = "Added authentication to bucket"
+
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "default"
+
+    forwarded_values {
+      query_string = false
+
+      cookies {
+        forward = "none"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 0
+    default_ttl            = 0
+    max_ttl                = 0
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  tags = {
+    Environment = "development"
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
+output "Domain_name" {
+  value = aws_cloudfront_distribution.s3_distribution.domain_name
+
+}
+
+resource "null_resource" "nulllocal4" {
+  provisioner "local-exec" {
+    command = "echo  ${aws_cloudfront_distribution.s3_distribution.domain_name} > cloudfrount.txt"
+  }
+
+
+
+}
+resource "null_resource" "nullloca5" {
+  provisioner "file" {
+    source      = "./cloudfrount.txt"
+    destination = "/var/www/html/cloudfrount.txt"
+
+
+  }
+
+
+}
+
+resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
+  comment = "Some comment"
+}
+
+
+
+data "aws_iam_policy_document" "s3_policy" {
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["${data.aws_s3_bucket.blog_repo.arn}/*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["${aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn}"]
+    }
+  }
+}
+
+```
+```
+resource "aws_ebs_volume" "EBS_1" {
+  availability_zone = aws_instance.Hybrid_instance.availability_zone
+  size              = 1
+  tags = {
+    Name = "hybrid_ebs"
+  }
+}
+
+
+
+resource "aws_volume_attachment" "ebs_att" {
+  device_name  = "/dev/sdh"
+  volume_id    = "${aws_ebs_volume.EBS_1.id}"
+  instance_id  = "${aws_instance.Hybrid_instance.id}"
+  force_detach = true
+}
+
+output "myos_ip" {
+  value = aws_instance.Hybrid_instance.public_ip
+}
+
+
+
+
+resource "null_resource" "nullremote2" {
+
+  depends_on = [
+    aws_volume_attachment.ebs_att,
+  ]
+
+
+  connection {
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = tls_private_key.TASK_1.private_key_pem
+    host        = aws_instance.Hybrid_instance.public_ip
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo mkfs.ext4  /dev/xvdh",
+      "sudo mount  /dev/xvdh  /var/www/html",
+      "sudo rm -rf /var/www/html/*",
+      "sudo git clone https://github.com/vishnupal/Hybrid_cloud_task_1.git  /var/www/html/"
+
+
+    ]
+  }
+}
+resource "null_resource" "nullremote9" {
+provisioner "local-exec" {
+    command = "scp -i tls_private_key.TASK_1.public_key_openssh aws_cloudfront_distribution.s3_distribution.domain_name  ec2-user@aws_instance.Hybrid_instance.public_ip:/var/www/html/"
+}
+}
+
+``

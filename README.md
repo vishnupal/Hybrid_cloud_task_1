@@ -18,7 +18,7 @@
 ## EXPLANATION
 ### Before going to task first of all we create a AMI user using AWS and download athe access key and secret key and do profile configure using aws2 cli
 ### add provider profile into terraform file
-### task 1-> in this task i create new key_pair using 
+### task 1-> in this task i create new key_pair terraform_ec2 using resouce tls_private_key 
 ```
 resource "tls_private_key" "TASK_1" {
 
@@ -34,6 +34,8 @@ module "key_pair" {
 
 }
 ```
+### task 2-> create a security group Service here ingress is set the inbount rules it mean user can access can we which specfic service so here i open http on port 80 and open ssh on port 22 so here user can access both service 
+### here egress is use for ec2 instance which service service can access it mean outside the ec2 instance .
 ```
 resource "aws_security_group" "Security_of_ec2" {
   name        = "Service"
@@ -74,7 +76,7 @@ resource "aws_security_group" "Security_of_ec2" {
   }
 }
 ```
-
+### i create instance and install httpd , php , git etc on top of ec2 instance 
 
 ```
 resource "aws_instance" "Hybrid_instance" {
@@ -104,6 +106,7 @@ resource "null_resource" "nulllocal1" {
   }
 }
 ```
+### a create a s3-website-vishnupal.com bucket and upload images on my bucket and it is accessible by public 
 ```
 resource "aws_s3_bucket" "s3_bucket" {
   bucket        = "s3-website-vishnupal.com"
@@ -137,6 +140,7 @@ output "s3_id" {
 }
 
 ```
+### i create cloudfrount for my s3 bucket 
 ```
 data "aws_s3_bucket" "blog_repo" {
   depends_on = [
@@ -237,6 +241,7 @@ data "aws_iam_policy_document" "s3_policy" {
 }
 
 ```
+### i create EBS of 1 GiB and format by ex4 and mount with ec2 instance /var/www/html directory  and  clone the github data in /var/www/html/ folder 
 ```
 resource "aws_ebs_volume" "EBS_1" {
   availability_zone = aws_instance.Hybrid_instance.availability_zone
@@ -293,4 +298,4 @@ provisioner "local-exec" {
 }
 }
 
-``
+```

@@ -18,7 +18,7 @@
 ## EXPLANATION
 ### Before going to task first of all we create a AMI user using AWS and download athe access key and secret key and do profile configure using aws2 cli
 ### add provider profile into terraform file
-### task 1-> in this task i create new key_pair terraform_ec2 using resouce tls_private_key 
+### task 1-> in this task i create new key_pair "terraform_ec2" using resouce tls_private_key. 
 ```
 resource "tls_private_key" "TASK_1" {
 
@@ -76,7 +76,7 @@ resource "aws_security_group" "Security_of_ec2" {
   }
 }
 ```
-### i create instance and install httpd , php , git etc on top of ec2 instance 
+### I create instance and install httpd , php , git etc on top of ec2 instance  and ip address save in the publicip.txt file
 
 ```
 resource "aws_instance" "Hybrid_instance" {
@@ -106,7 +106,7 @@ resource "null_resource" "nulllocal1" {
   }
 }
 ```
-### a create a s3-website-vishnupal.com bucket and upload images on my bucket and it is accessible by public 
+### Here a create a s3-website-vishnupal.com bucket and upload images on my bucket and it is accessible by public. here i download the github images repo  on my local system and using aws2 cli ip copy repo on s3 bucket 
 ```
 resource "aws_s3_bucket" "s3_bucket" {
   bucket        = "s3-website-vishnupal.com"
@@ -140,7 +140,7 @@ output "s3_id" {
 }
 
 ```
-### i create cloudfrount for my s3 bucket 
+### Here i  create cloudfrount for my s3 bucket 
 ```
 data "aws_s3_bucket" "blog_repo" {
   depends_on = [
@@ -299,3 +299,4 @@ provisioner "local-exec" {
 }
 
 ```
+## Work in progress need some change on my website code  . so here i want to copy the cloudfront link on my website so my image name not change so i create cloudfrount.txt file this store my cloudfrount link and using scp i copy the cludfrount file on top /var/www/html/ directory so in my index.php open the cloudfrount.txt file and add that link on my img tag . but i required some changes

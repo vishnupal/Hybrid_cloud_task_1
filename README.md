@@ -19,3 +19,18 @@
 ### Before going to task first of all we create a AMI user using AWS and download athe access key and secret key and do profile configure using aws2 cli
 ### add provider profile into terraform file
 ### task 1-> in this task i create new key_pair using 
+```
+resource "tls_private_key" "TASK_1" {
+
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+module "key_pair" {
+
+  source     = "terraform-aws-modules/key-pair/aws"
+  key_name   = "terraform_ec2"
+  public_key = tls_private_key.TASK_1.public_key_openssh
+
+}
+```

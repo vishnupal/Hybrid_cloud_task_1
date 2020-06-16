@@ -310,4 +310,5 @@ resource "null_resource" "nullremote2" {
 }
 
 ```
-
+![site](web.jpg)
+### i face some issue when i git clone my images folder then it is faild my cloning in the /var/www/html folder

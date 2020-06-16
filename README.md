@@ -257,7 +257,7 @@ data "aws_iam_policy_document" "s3_policy" {
 
 ```
 ### i create EBS of 1 GiB and format by ex4 and mount with ec2 instance /var/www/html directory  and  clone the github data in /var/www/html/ directory and for adding my cloudfrount domain i use sed command  bcz /var/www/html directory not provide write permision. my previous logic not work . and here i use index.php file there i add image tag with 
-### <img src=http://$a/images/img1.jpg> so here my cloudfrount domain name change with $a . here /images  is my directory store folder name and img1.jpg is image name so my img tag change by this  <img src=http://d25a7yh2otonb9.cloudfront.net/images/img1.jpg> here i add http bcz without http this not recognise this is a link 
+###  ``` <img src=http://$a/images/img1.jpg>``` so here my cloudfrount domain name change with $a . here /images  is my directory store folder name and img1.jpg is image name so my img tag change by this  ```<img src=http://d25a7yh2otonb9.cloudfront.net/images/img1.jpg> ```here i add http bcz without http this not recognise this is a link 
 ```
 resource "aws_ebs_volume" "EBS_1" {
   availability_zone = aws_instance.Hybrid_instance.availability_zone

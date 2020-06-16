@@ -146,12 +146,12 @@ resource "aws_s3_bucket" "s3_bucket" {
 provisioner "local-exec" {
     command = "rm -rvf ./images"
 }
-//provisioner "local-exec" {
-//    command = "git clone https://github.com/vishnupal/images.git"
-//}
-//provisioner "local-exec" {
-//    command = "aws2 s3 cp ./images s3://s3-website-vishnupal.com --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers --recursive"
-//}
+provisioner "local-exec" {
+    command = "git clone https://github.com/vishnupal/images.git"
+}
+provisioner "local-exec" {
+    command = "aws2 s3 cp ./images s3://s3-website-vishnupal.com --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers --recursive"
+}
 
    
   tags = {

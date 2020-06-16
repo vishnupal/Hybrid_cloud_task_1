@@ -1,5 +1,5 @@
 # Hybrid_cloud_task_
-
+![terraform](https://www.parkmycloud.com/wp-content/uploads/terraform-x-aws-1.png)
 ## PROBLEM STATEMENT :
 ### Note :- All the task perfome using terraform automation
 ### 1. Create the key and security group which allow the port 80.
@@ -17,16 +17,18 @@
 ### 4. aws2 cli
 ## EXPLANATION
 ### Before going to task first of all we create a AMI user using AWS and download athe access key and secret key and do profile configure using aws2 cli
-### add provider profile into terraform file
-### task 1-> in this task i create new key_pair "terraform_ec2" using resouce tls_private_key. 
+```
+aws2 configure --profile vishnupal
+```
+
+### here i add my  profile in terraform file i already configure in my local system
 ```
 provider "aws" {
   region = "ap-south-1"
   profile = "vishnupal"
 }
 ```
-
-
+### task 1-> In this task i create new key_pair "terraform_ec2" using resouce tls_private_key. here i use RSA algoritham for creating key new kay pair
 
 ```
 resource "tls_private_key" "TASK_1" {
@@ -45,6 +47,7 @@ module "key_pair" {
 ```
 ### task 2-> create a security group Service here ingress is set the inbount rules it mean user can access can we which specfic service so here i open http on port 80 and open ssh on port 22 so here user can access both service 
 ### here egress is use for ec2 instance which service service can access it mean outside the ec2 instance .
+### here add port 443. bcz when i access ssh connection then it is faild it required 443 for connection so i add this port number. and i not use portcol -1 bcz it open all the port . 
 ```
 resource "aws_security_group" "Security_of_ec2" {
   name        = "Service"
@@ -98,6 +101,7 @@ egress {
 }
 ```
 ### I create instance and install httpd , php , git etc on top of ec2 instance  and ip address save in the publicip.txt file
+### and here i use "terraform as key_name"  and private key use as generate by my tls_private_key resource or security_group add by create my Security_of_ec2 
 ```
 resource "aws_instance" "web" {
   ami           = "ami-0447a12f28fddb066"
@@ -132,7 +136,7 @@ resource "null_resource" "nulllocal1" {
   }
 }
 ```
-### Here a create a s3-website-vishnupal.com bucket and upload images on my bucket and it is accessible by public. here i download the github images repo  on my local system and using aws2 cli ip copy repo on s3 bucket 
+### Here a create a s3-website-vishnupal.com bucket and upload images on my bucket and it is accessible by public. here i download the github images repo  on my local system and using aws2 cli ip copy repo on s3 bucket so it is public so any one can access images
 ```
 resource "aws_s3_bucket" "s3_bucket" {
   bucket        = "s3-website-vishnupal.com"
@@ -166,7 +170,8 @@ output "s3_id" {
 }
 
 ```
-### Here i  create cloudfrount for my s3 bucket 
+### Here i  create cloudfrount domain name for my s3 bucket images data . this domain name use in my main website 
+
 ```
 data "aws_s3_bucket" "blog_repo" {
   depends_on = [
@@ -251,7 +256,8 @@ data "aws_iam_policy_document" "s3_policy" {
 }
 
 ```
-### i create EBS of 1 GiB and format by ex4 and mount with ec2 instance /var/www/html directory  and  clone the github data in /var/www/html/ folder 
+### i create EBS of 1 GiB and format by ex4 and mount with ec2 instance /var/www/html directory  and  clone the github data in /var/www/html/ directory and for adding my cloudfrount domain i use sed command  bcz /var/www/html directory not provide write permision. my previous logic not work . and here i use index.php file there i add image tag with 
+### <img src=http://$a/images/img1.jpg> so here my cloudfrount domain name change with $a . here /images  is my directory store folder name and img1.jpg is image name so my img tag change by this  <img src=http://d25a7yh2otonb9.cloudfront.net/images/img1.jpg> here i add http bcz without http this not recognise this is a link 
 ```
 resource "aws_ebs_volume" "EBS_1" {
   availability_zone = aws_instance.Hybrid_instance.availability_zone
@@ -260,8 +266,6 @@ resource "aws_ebs_volume" "EBS_1" {
     Name = "hybrid_ebs"
   }
 }
-
-
 
 resource "aws_volume_attachment" "ebs_att" {
   device_name  = "/dev/sdh"
@@ -306,4 +310,4 @@ resource "null_resource" "nullremote2" {
 }
 
 ```
-## Work in progress need some change on my website code  . so here i want to copy the cloudfront link on my website so my image name not change so i create cloudfrount.txt file this store my cloudfrount link and using scp i copy the cludfrount file on top /var/www/html/ directory so in my index.php open the cloudfrount.txt file and add that link on my img tag . but i required some changes
+

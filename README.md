@@ -20,6 +20,15 @@
 ### add provider profile into terraform file
 ### task 1-> in this task i create new key_pair "terraform_ec2" using resouce tls_private_key. 
 ```
+provider "aws" {
+  region = "ap-south-1"
+  profile = "vishnupal"
+}
+```
+
+
+
+```
 resource "tls_private_key" "TASK_1" {
 
   algorithm = "RSA"
@@ -56,7 +65,13 @@ resource "aws_security_group" "Security_of_ec2" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+ingress {
 
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   egress {
     from_port   = 80
@@ -64,37 +79,48 @@ resource "aws_security_group" "Security_of_ec2" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  
   egress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
+egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   tags = {
     Name = "Security"
   }
 }
 ```
 ### I create instance and install httpd , php , git etc on top of ec2 instance  and ip address save in the publicip.txt file
-
 ```
-resource "aws_instance" "Hybrid_instance" {
-  ami             = "ami-0447a12f28fddb066"
-  instance_type   = "t2.micro"
-  key_name        = "terraform_ec2"
+resource "aws_instance" "web" {
+  ami           = "ami-0447a12f28fddb066"
+  instance_type = "t2.micro"
+  key_name = "terraform_ec2"
   security_groups = ["${aws_security_group.Security_of_ec2.name}"]
-  user_data       = <<-EOF
-                #! /bin/bash
-                sudo su - root
-                sudo yum install httpd -y
-                sudo yum install php -y
-                sudo systemctl start httpd
-                sudo systemctl enable httpd
-                sudo yum install git -y
 
-                sudo setenforce 0
-                EOF
+  connection {
+    type     = "ssh"
+    user     = "ec2-user"
+    private_key = tls_private_key.TASK_1.private_key_pem
+    host     = aws_instance.web.public_ip
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo yum install httpd  php git -y",
+      "sudo systemctl restart httpd",
+      "sudo systemctl enable httpd",
+
+    ]
+  }
+
   tags = {
     Name = "Instance_of_vishnupal"
   }
@@ -198,29 +224,13 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 }
 
+
 output "Domain_name" {
   value = aws_cloudfront_distribution.s3_distribution.domain_name
 
 }
-
-resource "null_resource" "nulllocal4" {
-  provisioner "local-exec" {
-    command = "echo  ${aws_cloudfront_distribution.s3_distribution.domain_name} > cloudfrount.txt"
-  }
-
-
-
-}
-resource "null_resource" "nullloca5" {
-  provisioner "file" {
-    source      = "./cloudfrount.txt"
-    destination = "/var/www/html/cloudfrount.txt"
-
-
-  }
-
-
-}
+```
+```
 
 resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
   comment = "Some comment"
@@ -286,16 +296,13 @@ resource "null_resource" "nullremote2" {
       "sudo mkfs.ext4  /dev/xvdh",
       "sudo mount  /dev/xvdh  /var/www/html",
       "sudo rm -rf /var/www/html/*",
-      "sudo git clone https://github.com/vishnupal/Hybrid_cloud_task_1.git  /var/www/html/"
+      "sudo rm -rf /var/www/html/.git",
+      "sudo git clone https://github.com/vishnupal/Hybrid_cloud_task_1.git  /var/www/html/",
+      "sudo sed -i 's/$a/${aws_cloudfront_distribution.s3_distribution.domain_name}/g' /var/www/html/index.php",
 
 
     ]
   }
-}
-resource "null_resource" "nullremote9" {
-provisioner "local-exec" {
-    command = "scp -i tls_private_key.TASK_1.public_key_openssh aws_cloudfront_distribution.s3_distribution.domain_name  ec2-user@aws_instance.Hybrid_instance.public_ip:/var/www/html/"
-}
 }
 
 ```
